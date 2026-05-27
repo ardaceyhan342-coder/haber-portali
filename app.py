@@ -4,7 +4,8 @@ app = flask.Flask(__name__)
 def ana_sayfa():
     h_list = []
     try:
-        res = requests.get("https://www.trthaber.com/gundem_articles.rss", headers={'User-Agent': 'Mozilla'}, timeout=10)
+        # Linki daha aktif olan ana manşet haberleri (main_articles) ile değiştirdik
+        res = requests.get("https://www.trthaber.com/main_articles.rss", headers={'User-Agent': 'Mozilla'}, timeout=10)
         root = ET.fromstring(res.content)
         for item in root.findall('.//item')[:10]:
             title = item.find('title').text if item.find('title') is not None else ""
