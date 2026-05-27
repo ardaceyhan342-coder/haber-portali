@@ -2,27 +2,45 @@ import requests, flask, xml.etree.ElementTree as ET
 app = flask.Flask(__name__)
 @app.route('/')
 def ana_sayfa():
+    h_list = []
     try:
         res = requests.get("https://www.trthaber.com/gundem_articles.rss", headers={'User-Agent': 'Mozilla'}, timeout=10)
         root = ET.fromstring(res.content)
-        h_list = []
-        for item in root.findall('.//item')[:12]:
+        for item in root.findall('.//item')[:10]:
             title = item.find('title').text if item.find('title') is not None else ""
             desc = item.find('description').text if item.find('description') is not None else ""
-            img = ""
-            enclosure = item.find('enclosure')
-            if enclosure is not None and 'url' in enclosure.attrib:
-                img = enclosure.attrib['url']
-            if not img:
-                for child in item:
-                    if 'content' in child.tag and 'url' in child.attrib:
-                        img = child.attrib['url']
             if title:
-                h_list.append({'title': title, 'desc': desc, 'img': img})
+                h_list.append({'title': title, 'desc': desc})
     except Exception as e:
-        h_list = [{'title': 'Hata Olustu', 'desc': str(e), 'img': ''}]
+        h_list = [{'title': 'Hata Olustu', 'desc': str(e)}]
     
-    html_template = """<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Arda Gundem</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-950 text-slate-100 min-h-screen"><header class="bg-slate-900 border-b border-red-600/30 sticky top-0 z-50"><div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between"><h1 class="text-2xl font-black text-red-500 tracking-wider">🔴 ARDA GÜNDEM</h1><span class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full font-medium">CANLI</span></div></header><main class="max-w-6xl mx-auto px-4 py-8"><div class="grid grid-cols-1 lg:grid-cols-3 gap-8">{% if haberler %}<div class="lg:col-span-2 space-y-6">{% set ana = haberler[0] %><div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl"><img src="{% if ana.img %}{{ ana.img }}{% else %}https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=800{% endif %}" class="w-full h-72 md:h-96 object-cover"><div class="p-6 md:p-8"><span class="text-xs font-bold text-red-500 tracking-widest uppercase block mb-2">MANŞET HABER</span><h2 class="text-xl md:text-3xl font-extrabold text-white mb-4 leading-tight">{{ ana.title }}</h2><p class="text-slate-400 text-sm md:text-base leading-relaxed">{{ ana.desc }}</p></div></div></div><div class="space-y-4 h-[calc(100vh-12rem)] overflow-y-auto pr-2"><h3 class="text-sm font-black text-slate-400 tracking-wider uppercase mb-2">Gelişmeler</h3>{% for h in haberler[1:] %}<div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-md flex gap-4"><div class="space-y-1"><h4 class="text-sm font-bold text-slate-200 leading-snug line-clamp-2">{{ h.title }}</h4><p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">{{ h.desc }}</p></div></div>{% endfor %}</div>{% else %}<div class="col-span-full text-center py-12 text-slate-500">Haberler yuklenemiyor.</div>{% endif %}</div></main></body></html>"""
+    html_template = """<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arda Gundem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+    <header class="bg-slate-900 border-b border-red-600/30 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 class="text-2xl font-black text-red-500 tracking-wider">🔴 ARDA GÜNDEM</h1>
+            <span class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full font-medium">CANLI</span>
+        </div>
+    </header>
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="space-y-6">
+            {% for h in haberler %}
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl hover:border-slate-700 transition">
+                <h2 class="text-lg md:text-xl font-bold text-white mb-3 leading-tight">{{ h.title }}</h2>
+                <p class="text-slate-400 text-sm md:text-base leading-relaxed">{{ h.desc }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>"""
     return flask.render_template_string(html_template, haberler=h_list)
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=10000)
