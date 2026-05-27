@@ -32,9 +32,11 @@ def ana_sayfa():
     <main class="max-w-4xl mx-auto px-4 py-8">
         <div class="space-y-6">
             {% for h in haberler %}
-            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl hover:border-slate-700 transition">
-                <h2 class="text-lg md:text-xl font-bold text-white mb-3 leading-tight">{{ h.title }}</h2>
-                <p class="text-slate-400 text-sm md:text-base leading-relaxed">{{ h.desc }}</p>
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+                <h2 class="text-lg md:text-xl font-bold text-white mb-4 leading-tight">{{ h.title }}</h2>
+                <div class="text-slate-400 text-sm md:text-base leading-relaxed space-y-4">
+                    {{ h.desc | safe }}
+                </div>
             </div>
             {% endfor %}
         </div>
